@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import (
 	"github.com/gabriel-vasile/mimetype"

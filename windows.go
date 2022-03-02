@@ -1,6 +1,6 @@
 // +build windows
 
-package notfs
+package main
 
 import (
 	"github.com/hectane/go-acl/api"

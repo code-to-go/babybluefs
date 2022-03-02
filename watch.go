@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import "time"
 

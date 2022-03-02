@@ -1,6 +1,6 @@
 // +build darwin linux
 
-package notfs
+package main
 
 import (
 	"os"

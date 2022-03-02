@@ -1,6 +1,6 @@
 // +build !windows
 
-package notfs
+package main
 
 func hideFile(p string) error {
 	return nil

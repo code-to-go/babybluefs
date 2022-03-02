@@ -10,7 +10,7 @@ import (
 func usage() {
 	fmt.Printf("usage: stratofs <command> [<args>]\n\n" +
 		"These are the common commands.\n" +
-		"\tlist remote                             list the remote path\n" +
+		"\tlistCmd remote                             listCmd the remote path\n" +
 		"\tpush local remote                       copy file to remote\n" +
 		"\tpull remote local                       copy file from remote\n" +
 		"\tcopy remote1 remote2                    copy files from remote1 to remote2\n" +
@@ -31,7 +31,7 @@ func setLogLevel(verbose, verbose2 bool) {
 }
 
 var argsMinLen = map[string]int{
-	"list":   2,
+	"listCmd":   2,
 	"pull":   3,
 	"push":   3,
 	"create": 2,
@@ -75,8 +75,8 @@ func main() {
 	setLogLevel(verbose, verbose2)
 
 	switch commands[0] {
-	case "list":
-		list(commands[1], hidden)
+	case "listCmd":
+		listCmd(commands[1], hidden)
 	case "pull":
 		pull(commands[1], commands[2])
 	case "push":

@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import (
 	"errors"
@@ -29,8 +29,8 @@ type FS interface {
 	Rename(old, new string) error
 
 	MkdirAll(name string) error
-	CopyTo(name string, w io.Writer) error
-	CopyFrom(name string, r io.Reader) error
+	Pull(name string, w io.Writer) error
+	Push(name string, r io.Reader) error
 
 	Close() error
 	Props() Props

@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"stratofs/sfs"
 	"strconv"
 	"strings"
 )
@@ -30,13 +29,13 @@ func getRemoteList(home, remote, ph string) []string {
 		return nil
 	}
 
-	var c sfs.FSConfig
+	var c FSConfig
 	err = yaml.Unmarshal(data, &c)
 	if err != nil {
 		return nil
 	}
 
-	f, err := sfs.NewFS(c)
+	f, err := NewFS(c)
 	if err != nil {
 		return nil
 	}
@@ -48,7 +47,7 @@ func getRemoteList(home, remote, ph string) []string {
 	//fmt.Println("...")
 
 	var remotes []string
-	ls, _ := f.ReadDir(dir, sfs.IncludeHiddenFiles)
+	ls, _ := f.ReadDir(dir, IncludeHiddenFiles)
 	for _, l := range ls {
 		if strings.HasPrefix(l.Name(), filter) {
 			if l.IsDir() {
@@ -162,12 +161,12 @@ func complete(cl string) {
 	args := strings.Split(cl, " ")
 
 	if len(args) < 2 {
-		filterEscapeAndPrint("", false, "pull ", "push ", "list ", "create ")
+		filterEscapeAndPrint("", false, "pull ", "push ", "listCmd ", "create ")
 		return
 	}
 
 	switch args[1] {
-	case "list":
+	case "listCmd":
 		completeList(args[2:])
 	case "pull":
 		completePull(args[2:])
@@ -176,6 +175,6 @@ func complete(cl string) {
 	case "create":
 		completeCreate(args[2:])
 	default:
-		filterEscapeAndPrint(args[1], false, "pull ", "push ", "list ", "create ")
+		filterEscapeAndPrint(args[1], false, "pull ", "push ", "listCmd ", "create ")
 	}
 }

@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import (
 	"crypto/aes"
@@ -80,36 +80,4 @@ func CipherReader(b cipher.Block, r io.Reader) io.Reader {
 	return &StreamReader{c}
 }
 
-
-
-func EncryptPath(b cipher.Block, p string) (string, error) {
-	//if B != nil {
-	//	Dir, n := path.Split(P)
-	//	if bs, err := EncryptBytes(B, []byte(n)); err == nil {
-	//		return path.Join(Dir, fmt.Sprintf("ENC!%s",hex.EncodeToString(bs))), nil
-	//	} else {
-	//		return "", err
-	//	}
-	//}
-	return p, nil
-}
-
-func DecryptPath(b cipher.Block, p string) (string, error) {
-	//if B != nil {
-	//	Dir, n := path.Split(P)
-	//	if !strings.HasPrefix(n, "ENC!") {
-	//		return "", os.ErrInvalid
-	//	}
-	//	bs, err := hex.DecodeString(n[4:])
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//	if bs, err = DecryptBytes(B, bs); err == nil {
-	//		return path.Join(Dir, string(bs)), nil
-	//	} else {
-	//		return "", err
-	//	}
-	//}
-	return p, nil
-}
 

@@ -9,13 +9,12 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"stratofs/sfs"
 	"strings"
 	"time"
 )
 
-var s3 = sfs.S3Config{}
-var sftp = sfs.SFTPConfig{}
+var s3 = S3Config{}
+var sftp = SFTPConfig{}
 
 func getUnixEditor(editor ...string) string {
 	for _, e := range editor {
@@ -42,7 +41,7 @@ func getEditor() string {
 }
 
 func create(transport string) {
-	c := sfs.FSConfig{
+	c := FSConfig{
 		Name:  "",
 		Group: "public",
 	}
@@ -53,7 +52,7 @@ func create(transport string) {
 	case "sftp":
 		c.SFTP = &sftp
 	case "azure":
-		c.Azure = &sfs.AzureConfig{}
+		c.Azure = &AzureConfig{}
 	}
 
 	home := os.Getenv("SF_HOME")

@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ func SetMeta(f FS, name string, metas ...interface{}) error {
 	m := make(MetaBlob)
 	name = metaName(name)
 	bs := new(bytes.Buffer)
-	err := f.CopyTo(name, bs)
+	err := f.Pull(name, bs)
 	if err == nil {
 		_ = gob.NewDecoder(bs).Decode(&m)
 	}
@@ -45,7 +45,7 @@ func SetMeta(f FS, name string, metas ...interface{}) error {
 		return err
 	}
 
-	return f.CopyFrom(name, buf)
+	return f.Pull(name, buf)
 }
 
 
@@ -54,7 +54,7 @@ func GetMeta(f FS, name string, metas ...interface{}) error {
 	name = metaName(name)
 
 	bs := new(bytes.Buffer)
-	err := f.CopyTo(name, bs)
+	err := f.Pull(name, bs)
 	if err != nil {
 		return err
 	}

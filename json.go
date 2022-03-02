@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 //ReadJSON reads a JSON file
 func ReadJSON(f FS, name string, out interface{}) error {
 	var s ByteStream
-	err := f.CopyTo(name, &s)
+	err := f.Pull(name, &s)
 	if err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func WriteJSON(f FS, name string, in interface{}) error {
 	if err != nil {
 		return err
 	}
-	return f.CopyFrom(name, &ByteStream{d,0})
+	return f.Push(name, &ByteStream{d,0})
 }
 
 func ConvertWithJSON(in interface{}, out interface{}) error {

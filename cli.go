@@ -7,11 +7,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"stratofs/sfs"
 	"strings"
 )
 
-func getFS(ph string) (f sfs.FS, ph2 string) {
+func getFS(ph string) (f FS, ph2 string) {
 	name := strings.Split(ph, "/")[0]
 
 	home := os.Getenv("SF_HOME")
@@ -20,9 +19,9 @@ func getFS(ph string) (f sfs.FS, ph2 string) {
 	}
 	logrus.Infof("home is '%s'", home)
 
-	var c sfs.FSConfig
-	l := sfs.NewLocal(home, 0644)
-	err := sfs.ReadYaml(l, fmt.Sprintf("%s.yaml", name), &c)
+	var c FSConfig
+	l := NewLocal(home, 0644)
+	err := ReadYaml(l, fmt.Sprintf("%s.yaml", name), &c)
 	if err != nil {
 		return nil, ""
 		color.Red("remote '%s' not found", name)
@@ -30,7 +29,7 @@ func getFS(ph string) (f sfs.FS, ph2 string) {
 		os.Exit(1)
 	}
 
-	f, err = sfs.NewFS(c)
+	f, err = NewFS(c)
 	if err != nil {
 		color.Red("connection fail on '%s': %v", name, err)
 		logrus.Infof("cannot connect to load '%s': %v", name, err)
@@ -40,10 +39,10 @@ func getFS(ph string) (f sfs.FS, ph2 string) {
 	return f, ph[len(name):]
 }
 
-func list(remote string, hidden bool) {
-	var opts sfs.ListOption
+func listCmd(remote string, hidden bool) {
+	var opts ListOption
 	if hidden {
-		opts = sfs.IncludeHiddenFiles
+		opts = IncludeHiddenFiles
 	}
 
 	f, ph := getFS(remote)
@@ -53,7 +52,7 @@ func list(remote string, hidden bool) {
 		if err == nil {
 			ls = append(ls, l)
 		} else {
-			color.Red("list '%s': %v", ph, err)
+			color.Red("listCmd '%s': %v", ph, err)
 			return
 		}
 	}
@@ -70,7 +69,7 @@ func list(remote string, hidden bool) {
 	}
 }
 
-func pullFile(f sfs.FS, ph, local string) {
+func pullFolder(f FS, ph, local string) {
 	stat, err := f.Stat(ph)
 	if err != nil {
 		color.Red("cannot access '%s': %v", ph, err)
@@ -87,9 +86,9 @@ func pullFile(f sfs.FS, ph, local string) {
 		local = filepath.Join(local, path.Base(ph))
 		os.MkdirAll(local, 0755)
 
-		ls, _ := f.ReadDir(ph, sfs.IncludeHiddenFiles)
+		ls, _ := f.ReadDir(ph, IncludeHiddenFiles)
 		for _, l := range ls {
-			pullFile(f, path.Join(ph, l.Name()), local)
+			pullFolder(f, path.Join(ph, l.Name()), local)
 		}
 		return
 	}
@@ -125,7 +124,7 @@ func pullFile(f sfs.FS, ph, local string) {
 
 func pull(remote, local string) {
 	f, ph := getFS(remote)
-	pullFile(f, ph, local)
+	pullFolder(f, ph, local)
 }
 
 func push(local, remote string) {

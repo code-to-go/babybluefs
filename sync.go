@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import (
 	"context"
@@ -97,9 +97,9 @@ func listAndSortFiles(dir string, f FS, ignoreOlderThan time.Time, dirs map[stri
 type item struct {
 	name string
 	l    fs.FileInfo
-	r    fs.FileInfo
-	la   Attr
-	ra   Attr
+	r  fs.FileInfo
+	la Attr
+	ra Attr
 }
 
 func hasAccess(remote remote, keys Keys) bool {
@@ -356,7 +356,7 @@ func syncLocalFiles(dir string, local FS, now time.Time, localFiles []fs.FileInf
 		n := path.Join(dir, l.Name())
 		_ = UpdateAttr(local, n, n, func(attr Attr) Attr {
 			if l.ModTime().After(attr.SyncTime) {
-				crc := calculateCRC64(local, n)
+				crc := CalculateCRC64(local, n)
 				if len(attr.CRC64s) == 0 || crc != attr.CRC64s[0] {
 					if len(attr.CRC64s) > 16 {
 						attr.CRC64s = append([]uint64{crc}, attr.CRC64s[0:15]...)

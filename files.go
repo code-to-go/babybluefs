@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import (
 	"io"
@@ -37,7 +37,7 @@ func CopyTo(f FS, name string, w io.Writer, metas ...interface{}) error {
 			return err
 		}
 	}
-	return f.CopyTo(name, w)
+	return f.Pull(name, w)
 }
 
 func CopyFrom(f FS, name string, r io.Reader, metas ...interface{}) error {
@@ -46,7 +46,7 @@ func CopyFrom(f FS, name string, r io.Reader, metas ...interface{}) error {
 			return err
 		}
 	}
-	err := f.CopyFrom(name, r)
+	err := f.Push(name, r)
 	if err != nil {
 		_ = RemoveMeta(f, name)
 	}

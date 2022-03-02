@@ -1,4 +1,4 @@
-package notfs
+package main
 
 import (
 	"crypto/cipher"
@@ -14,9 +14,9 @@ type remote struct {
 type Keys map[Group]cipher.Block
 
 type Mesh struct {
-	Keys    Keys
-	Local   FS
-	Remotes map[string]remote
+	Keys         Keys
+	Local        FS
+	Remotes      map[string]remote
 	RemotesState map[string]string
 	LastSync     map[string]time.Time
 	Zombie       bool
