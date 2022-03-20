@@ -4,13 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"stratofs/cli"
 	"os"
 )
 
 func usage() {
 	fmt.Printf("usage: stratofs <command> [<args>]\n\n" +
 		"These are the common commands.\n" +
-		"\tlistCmd remote                             listCmd the remote path\n" +
+		"\tlist remote                             list the remote path\n" +
 		"\tpush local remote                       copy file to remote\n" +
 		"\tpull remote local                       copy file from remote\n" +
 		"\tcopy remote1 remote2                    copy files from remote1 to remote2\n" +
@@ -67,7 +68,7 @@ func main() {
 
 	cl, completion := os.LookupEnv("COMP_LINE")
 	if completion {
-		complete(cl)
+		cli.Complete(cl)
 		return
 	}
 
@@ -75,13 +76,13 @@ func main() {
 	setLogLevel(verbose, verbose2)
 
 	switch commands[0] {
-	case "listCmd":
-		listCmd(commands[1], hidden)
+	case "list":
+		cli.List(commands[1], hidden)
 	case "pull":
-		pull(commands[1], commands[2])
+		cli.Pull(commands[1], commands[2])
 	case "push":
-		push(commands[1], commands[2])
+		cli.Push(commands[1], commands[2])
 	case "create":
-		create(commands[1])
+		cli.Create(commands[1])
 	}
 }
