@@ -5,15 +5,14 @@ import (
 	"github.com/fatih/color"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	"stratofs/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"stratofs/store"
 	"strings"
 	"time"
 )
-
 
 func getUnixEditor(editor ...string) string {
 	for _, e := range editor {
@@ -40,24 +39,25 @@ func getEditor() string {
 }
 
 func Create(transport string) {
-	c := fs.Config{
+	c := store.Config{
 		Name:  "",
 		Group: "public",
 	}
 
 	switch transport {
 	case "s3":
-		c.S3 = &fs.S3Config{}
+		c.S3 = &store.S3Config{}
 	case "sftp":
-		c.SFTP = &fs.SFTPConfig{}
+		c.SFTP = &store.SFTPConfig{}
+	case "ftp":
+		c.FTP = &store.FTPConfig{}
 	case "azure":
-		c.Azure = &fs.AzureConfig{}
+		c.Azure = &store.AzureConfig{}
+	case "smb":
+		c.SMB = &store.SMBConfig{}
 	}
 
-	home := os.Getenv("SF_HOME")
-	if home == "" {
-		home, _ = os.Getwd()
-	}
+	home := GetHome()
 
 	data, err := yaml.Marshal(c)
 	if err != nil {
@@ -72,6 +72,7 @@ func Create(transport string) {
 		os.Exit(1)
 	}
 
+	before, _ := os.Stat(filepath.Join(home, name))
 	cmd := exec.Command(getEditor(), filepath.Join(home, name))
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -80,6 +81,13 @@ func Create(transport string) {
 	if err != nil {
 		color.Red("Something went wrong: %v", err)
 		os.Exit(1)
+	}
+
+	after, _ := os.Stat(filepath.Join(home, name))
+	if before.ModTime() == after.ModTime() {
+		color.Green("No changes. Delete file")
+		os.Remove(filepath.Join(home, name))
+		return
 	}
 
 	data, err = os.ReadFile(filepath.Join(home, name))
@@ -102,4 +110,6 @@ func Create(transport string) {
 			os.Exit(1)
 		}
 	}
+
+	color.Green("configuration %s created", c.Name)
 }

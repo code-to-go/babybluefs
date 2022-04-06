@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	"stratofs/fs"
-	"os"
 	"path"
 	"path/filepath"
+	"stratofs/store"
 	"strconv"
 	"strings"
 )
@@ -30,13 +29,13 @@ func getRemoteList(home, remote, ph string) []string {
 		return nil
 	}
 
-	var c fs.Config
+	var c store.Config
 	err = yaml.Unmarshal(data, &c)
 	if err != nil {
 		return nil
 	}
 
-	f, err := fs.NewFS(c)
+	f, err := store.NewFS(c)
 	if err != nil {
 		return nil
 	}
@@ -48,7 +47,7 @@ func getRemoteList(home, remote, ph string) []string {
 	//fmt.Println("...")
 
 	var remotes []string
-	ls, _ := f.ReadDir(dir, fs.IncludeHiddenFiles)
+	ls, _ := f.ReadDir(dir, store.IncludeHiddenFiles)
 	for _, l := range ls {
 		if strings.HasPrefix(l.Name(), filter) {
 			if l.IsDir() {
@@ -63,10 +62,7 @@ func getRemoteList(home, remote, ph string) []string {
 }
 
 func getRemotes(startWith string) []string {
-	home := os.Getenv("SF_HOME")
-	if home == "" {
-		home, _ = os.Getwd()
-	}
+	home := GetHome()
 
 	var remotes []string
 	ls, _ := ioutil.ReadDir(home)
@@ -75,7 +71,7 @@ func getRemotes(startWith string) []string {
 		if ext == ".yaml" {
 			name := l.Name()[0 : len(l.Name())-len(ext)]
 			if strings.HasPrefix(name, startWith) {
-				remotes = append(remotes, fmt.Sprintf("%s/",name))
+				remotes = append(remotes, fmt.Sprintf("%s/", name))
 			}
 			if strings.HasPrefix(startWith, name) {
 				remotes = append(remotes, getRemoteList(home, name, startWith[len(name):])...)
@@ -85,7 +81,7 @@ func getRemotes(startWith string) []string {
 	return remotes
 }
 
-func getLocals(startWith string) []string{
+func getLocals(startWith string) []string {
 	dir := filepath.Dir(startWith)
 	var filter string
 
@@ -94,7 +90,7 @@ func getLocals(startWith string) []string{
 	} else {
 		filter = startWith[len(dir):]
 	}
-	filter = strings.Trim(filter, "." )
+	filter = strings.Trim(filter, ".")
 	filter = strings.Trim(filter, strconv.QuoteRune(filepath.Separator))
 
 	ls, err := ioutil.ReadDir(dir)
@@ -111,7 +107,7 @@ func getLocals(startWith string) []string{
 						filepath.Join(dir, l.Name()), filepath.Separator))
 			} else {
 				locals = append(locals,
-						filepath.Join(dir, l.Name()))
+					filepath.Join(dir, l.Name()))
 			}
 		}
 	}
@@ -155,14 +151,16 @@ func completeCreate(args []string) {
 		filter = args[0]
 	}
 
-	filterEscapeAndPrint(filter, false, "s3 ", "azure ", "sftp ", "ftp ", "sharepoint ")
+	filterEscapeAndPrint(filter, false, "s3 ", "smb ", "azure ", "sftp ",
+		"ftp ", "sharepoint ")
 }
 
 func Complete(cl string) {
 	args := strings.Split(cl, " ")
 
 	if len(args) < 2 {
-		filterEscapeAndPrint("", false, "pull ", "push ", "list ", "create ")
+		filterEscapeAndPrint("", false, "pull ", "push ",
+			"list ", "create ", "edit ", "mesh ", "sync ")
 		return
 	}
 
@@ -176,6 +174,7 @@ func Complete(cl string) {
 	case "create":
 		completeCreate(args[2:])
 	default:
-		filterEscapeAndPrint(args[1], false, "pull ", "push ", "list ", "create ")
+		filterEscapeAndPrint(args[1], false, "pull ", "push ",
+			"list ", "create ", "edit ", "mesh ", "sync ")
 	}
 }

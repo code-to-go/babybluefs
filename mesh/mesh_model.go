@@ -2,21 +2,21 @@ package mesh
 
 import (
 	"crypto/cipher"
-	"stratofs/fs"
+	"stratofs/store"
 	"sync"
 	"time"
 )
 
 type remote struct {
-	F     fs.FS
-	Group fs.Group
+	F     store.FS
+	Group store.Group
 }
 
-type Keys map[fs.Group]cipher.Block
+type Keys map[store.Group]cipher.Block
 
 type Mesh struct {
 	Keys         Keys
-	Local        fs.FS
+	Local        store.FS
 	Remotes      map[string]remote
 	RemotesState map[string]string
 	LastSync     map[string]time.Time

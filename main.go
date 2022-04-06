@@ -4,20 +4,26 @@ import (
 	"flag"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"stratofs/cli"
 	"os"
+	"stratofs/cli"
 )
 
 func usage() {
-	fmt.Printf("usage: stratofs <command> [<args>]\n\n" +
-		"These are the common commands.\n" +
-		"\tlist remote                             list the remote path\n" +
-		"\tpush local remote                       copy file to remote\n" +
-		"\tpull remote local                       copy file from remote\n" +
-		"\tcopy remote1 remote2                    copy files from remote1 to remote2\n" +
-		"\tcreate [s3|azure|sftp|ftp|sharepoint]   create a new connection\n" +
-		"\t-v                                      shows verbose log\n" +
-		"\t-vv                                     shows a very verbose log\n")
+	home := cli.GetHome()
+
+	fmt.Printf("usage: stratofs <command> [<args>]\n\n"+
+		"These are the common commands.\n"+
+		"\tlist remote                             list the remote path\n"+
+		"\tpush local store                        copy local file to a store\n"+
+		"\tpull store local                        copy local file from a store\n"+
+		"\tcopy store1 store2                      copy files from one store to another\n"+
+		"\tcreate [s3|azure|sftp|ftp|sharepoint]   create a new store configuration\n"+
+		"\tedit store                              edit an existing store configuration\n"+
+		"\tmesh name [storage...]                  create a mesh with provided storage list\n"+
+		"\tsync mesh                               align all the storage points in the mesh\n"+
+		"\t-v                                      shows verbose log\n"+
+		"\t-vv                                     shows a very verbose log\n\n"+
+		"Configuration will be stored in %s. Define SF_HOME variable for a different location\n\n", home)
 }
 
 func setLogLevel(verbose, verbose2 bool) {
@@ -32,10 +38,12 @@ func setLogLevel(verbose, verbose2 bool) {
 }
 
 var argsMinLen = map[string]int{
-	"listCmd":   2,
-	"pull":   3,
-	"push":   3,
-	"create": 2,
+	"listCmd": 2,
+	"pull":    3,
+	"push":    3,
+	"create":  2,
+	"edit":    2,
+	"mesh":    2,
 }
 
 func checkArgs(args []string) {
@@ -84,5 +92,7 @@ func main() {
 		cli.Push(commands[1], commands[2])
 	case "create":
 		cli.Create(commands[1])
+	case "mesh":
+		cli.Mesh(commands[1], commands[2:])
 	}
 }

@@ -5,40 +5,40 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"encoding/gob"
-	"stratofs/fs"
+	"stratofs/store"
 	"time"
 )
 
-// MeshConfig defines a mesh built of multiple file storages and groups
-type MeshConfig struct {
-	Remotes []fs.Config         `json:"remotes" yaml:"remotes"`
-	Groups  map[fs.Group]string `json:"groups" yaml:"groups"`
+// Config defines a mesh built of multiple file storages and groups
+type Config struct {
+	Remotes []store.Config         `json:"remotes" yaml:"remotes"`
+	Groups  map[store.Group]string `json:"groups" yaml:"groups"`
 }
 
-// MeshFromFile reads a Mesh configuration from a local file and update the provided mesh m.
+// FromFile reads a Mesh configuration from a local file and update the provided mesh m.
 // It creates a new mesh when m is nil
-func MeshFromFile(f fs.FS, configPath string, m *Mesh, reconnect bool) error {
-	c, err := ReadMeshConfig(f, configPath)
+func FromFile(f store.FS, configPath string, m *Mesh, reconnect bool) error {
+	c, err := ReadConfig(f, configPath)
 	if err != nil {
 		return err
 	}
-	return MeshFromConfig(c, m, reconnect)
+	return FromConfig(c, m, reconnect)
 }
 
-// MeshFromConfig updates a mesh m with the provided configuration c
+// FromConfig updates a mesh m with the provided configuration c
 // It creates a new mesh when m is nil
-func MeshFromConfig(c MeshConfig, m *Mesh, reconnect bool) error {
+func FromConfig(c Config, m *Mesh, reconnect bool) error {
 	m.sync.Lock()
 	defer m.sync.Unlock()
 
-	m.Keys = map[fs.Group]cipher.Block{}
+	m.Keys = map[store.Group]cipher.Block{}
 	m.Remotes = map[string]remote{}
 	m.RemotesState = map[string]string{}
 	m.LastSync = map[string]time.Time{}
 	groups := c.Groups
 
 	for group, key := range groups {
-		b, _ := fs.NewAesCipher([]byte(key))
+		b, _ := store.NewAesCipher([]byte(key))
 		m.Keys[group] = b
 	}
 
@@ -54,13 +54,13 @@ func MeshFromConfig(c MeshConfig, m *Mesh, reconnect bool) error {
 			}
 		}
 
-		f, err := fs.NewFS(c)
+		f, err := store.NewFS(c)
 		if err != nil {
 			m.RemotesState[name] = err.Error()
 			continue
 		}
 
-		if !fs.isValidKeyHash(f, c.Group, groups) {
+		if !store.IsValidKeyHash(f, c.Group, groups) {
 			m.RemotesState[name] = "Invalid Encryption Key"
 			continue
 		}
@@ -74,31 +74,30 @@ func MeshFromConfig(c MeshConfig, m *Mesh, reconnect bool) error {
 	return nil
 }
 
-// ReadMeshConfig reads a mesh configuration
-func ReadMeshConfig(f fs.FS, configPath string) (MeshConfig, error) {
-	var c MeshConfig
-	err := fs.ReadYaml(f, configPath, &c)
+// ReadConfig reads a mesh configuration
+func ReadConfig(f store.FS, configPath string) (Config, error) {
+	var c Config
+	err := store.ReadYaml(f, configPath, &c)
 	return c, err
 }
 
-
-// WriteMeshConfig writes a mesh configuration
-func WriteMeshConfig(f fs.FS, configPath string, c MeshConfig) error {
-	return fs.WriteYaml(f, configPath, c)
+// WriteConfig writes a mesh configuration
+func WriteConfig(f store.FS, configPath string, c Config) error {
+	return store.WriteYaml(f, configPath, c)
 }
 
-// NewMeshConfig creates an empty mesh configuration
-func NewMeshConfig() MeshConfig {
-	return MeshConfig{
-		Groups: map[fs.Group]string{
-			"public": fs.generateRandomString(32),
+// NewConfig creates an empty mesh configuration
+func NewConfig() Config {
+	return Config{
+		Groups: map[store.Group]string{
+			"public": store.GenerateRandomString(32),
 		},
 	}
 }
 
-// MeshConfigToToken converts a mesh configuration to a token, which can be used for distribution.
+// ConfigToToken converts a mesh configuration to a token, which can be used for distribution.
 // The token is encoded in AES with the provided key
-func MeshConfigToToken(c MeshConfig, key []byte) (string, error) {
+func ConfigToToken(c Config, key []byte) (string, error) {
 	buf := new(bytes.Buffer)
 	err := gob.NewEncoder(buf).Encode(c)
 	if err != nil {
@@ -107,11 +106,11 @@ func MeshConfigToToken(c MeshConfig, key []byte) (string, error) {
 
 	bs := buf.Bytes()
 	if key != nil {
-		b, err := fs.NewAesCipher(key)
+		b, err := store.NewAesCipher(key)
 		if err != nil {
 			return "", err
 		}
-		bs, err = fs.EncryptBytes(b, bs)
+		bs, err = store.EncryptBytes(b, bs)
 		if err != nil {
 			return "", err
 		}
@@ -120,10 +119,10 @@ func MeshConfigToToken(c MeshConfig, key []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(bs), nil
 }
 
-// TokenToMeshConfig converts a token to a mesh configuration.
+// TokenToConfig converts a token to a mesh configuration.
 // The token is decoded in AES with the provided key
-func TokenToMeshConfig(token string, key []byte) (MeshConfig, error) {
-	var c MeshConfig
+func TokenToConfig(token string, key []byte) (Config, error) {
+	var c Config
 
 	bs, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
@@ -131,18 +130,16 @@ func TokenToMeshConfig(token string, key []byte) (MeshConfig, error) {
 	}
 
 	if key != nil {
-		b, err := fs.NewAesCipher(key)
+		b, err := store.NewAesCipher(key)
 		if err != nil {
-			return MeshConfig{}, err
+			return Config{}, err
 		}
-		bs, err = fs.DecryptBytes(b, bs)
+		bs, err = store.DecryptBytes(b, bs)
 		if err != nil {
-			return MeshConfig{}, err
+			return Config{}, err
 		}
 	}
 
 	err = gob.NewDecoder(bytes.NewBuffer(bs)).Decode(&c)
 	return c, err
 }
-
-

@@ -3,18 +3,18 @@ package mesh
 import (
 	"context"
 	"fmt"
-	"github.com/beevik/ntp"
-	"github.com/hashicorp/go-multierror"
-	"github.com/sirupsen/logrus"
 	"io/fs"
 	"path"
 	"sort"
-	fs2 "stratofs/fs"
+	"stratofs/store"
 	"time"
+
+	"github.com/beevik/ntp"
+	"github.com/hashicorp/go-multierror"
+	"github.com/sirupsen/logrus"
 )
 
-
-func Sync(mesh *Mesh, name string, ignoreOlderThan time.Time, mon chan string) error {
+func Sync(mesh *Mesh, folder string, ignoreOlderThan time.Time, mon chan string) error {
 	var err *multierror.Error
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
@@ -32,7 +32,7 @@ func Sync(mesh *Mesh, name string, ignoreOlderThan time.Time, mon chan string) e
 	for n, remote := range remotes {
 		go func() {
 			tm := ignoreOlderThan
-			ec <- syncDir(name, local, remote, keys, now, tm, mon)
+			ec <- syncFolder(folder, local, remote, keys, now, tm, mon)
 		}()
 		select {
 		case e := <-ec:
@@ -48,9 +48,6 @@ func Sync(mesh *Mesh, name string, ignoreOlderThan time.Time, mon chan string) e
 	}
 	return err.ErrorOrNil()
 }
-
-const keyHashFile = ".keyHash"
-
 
 func copyRemotes(mesh *Mesh) map[string]remote {
 	var remotes = map[string]remote{}
@@ -68,12 +65,12 @@ func copyKeys(mesh *Mesh) Keys {
 	return keys
 }
 
-func listAndSortFiles(dir string, f fs2.FS, ignoreOlderThan time.Time, dirs map[string]bool) []fs.FileInfo {
+func listAndSortFiles(dir string, f store.FS, ignoreOlderThan time.Time, dirs map[string]bool) []fs.FileInfo {
 	conflicts := make(map[string]bool)
 
 	ls, _ := f.ReadDir(dir, 0)
 	for _, l := range ls {
-		ok, prefix, _, ext := fs2.parseConflict(l.Name())
+		ok, prefix, _, ext := parseConflict(l.Name())
 		if ok {
 			conflicts[fmt.Sprintf("%s%s", prefix, ext)] = true
 			conflicts[l.Name()] = true
@@ -98,9 +95,9 @@ func listAndSortFiles(dir string, f fs2.FS, ignoreOlderThan time.Time, dirs map[
 type item struct {
 	name string
 	l    fs.FileInfo
-	r  fs.FileInfo
-	la fs2.Attr
-	ra fs2.Attr
+	r    fs.FileInfo
+	la   store.Attr
+	ra   store.Attr
 }
 
 func hasAccess(remote remote, keys Keys) bool {
@@ -116,19 +113,19 @@ func getTime() time.Time {
 		if err == nil {
 			return tm
 		}
-		time.Sleep(time.Duration(i)*time.Second)
+		time.Sleep(time.Duration(i) * time.Second)
 	}
 	return time.Now()
 }
 
-func collect(dir string, localFiles, remoteFiles []fs.FileInfo, local fs2.FS, remote remote,
+func collect(dir string, localFiles, remoteFiles []fs.FileInfo, local store.FS, remote remote,
 	keys Keys) []item {
 	i := 0
 	j := 0
 	var items []item
 	for i < len(localFiles) || j < len(remoteFiles) {
 		var l, r fs.FileInfo
-		var la, ra fs2.Attr
+		var la, ra store.Attr
 
 		if i < len(localFiles) {
 			l = localFiles[i]
@@ -140,8 +137,8 @@ func collect(dir string, localFiles, remoteFiles []fs.FileInfo, local fs2.FS, re
 		switch {
 		case l != nil && r != nil && l.Name() == r.Name():
 			n := path.Join(dir, l.Name())
-			_ = fs2.GetMeta(local, n, &la)
-			_ = fs2.GetMeta(remote.F, n, &ra)
+			_ = store.GetMeta(local, n, &la)
+			_ = store.GetMeta(remote.F, n, &ra)
 
 			if hasAccess(remote, keys) {
 				items = append(items, item{n, l, r, la, ra})
@@ -150,16 +147,16 @@ func collect(dir string, localFiles, remoteFiles []fs.FileInfo, local fs2.FS, re
 			j++
 		case r == nil || l != nil && l.Name() < r.Name():
 			n := path.Join(dir, l.Name())
-			_ = fs2.GetMeta(local, n, &la)
-			_ = fs2.GetMeta(remote.F, n, &ra)
+			_ = store.GetMeta(local, n, &la)
+			_ = store.GetMeta(remote.F, n, &ra)
 			if la.Group == remote.Group {
 				items = append(items, item{n, l, nil, la, ra})
 			}
 			i++
 		case l == nil || r != nil && l.Name() > r.Name():
 			n := path.Join(dir, r.Name())
-			_ = fs2.GetMeta(local, n, &la)
-			_ = fs2.GetMeta(remote.F, n, &ra)
+			_ = store.GetMeta(local, n, &la)
+			_ = store.GetMeta(remote.F, n, &ra)
 			if hasAccess(remote, keys) {
 				items = append(items, item{n, nil, r, la, ra})
 			}
@@ -169,21 +166,20 @@ func collect(dir string, localFiles, remoteFiles []fs.FileInfo, local fs2.FS, re
 	return items
 }
 
-
-func getEncryptedAccessToFile(r remote, keys Keys) fs2.FS {
+func getEncryptedAccessToFile(r remote, keys Keys) store.FS {
 	if keys == nil {
 		return r.F
 	}
 	b := keys[r.Group]
-	return fs2.NewEncrypted(r.F, b)
+	return store.NewEncrypted(r.F, b)
 }
 
-func sameContent(a, b fs2.Attr) bool {
+func sameContent(a, b store.Attr) bool {
 	return a.CRC64s != nil && b.CRC64s != nil &&
 		a.CRC64s[0] == b.CRC64s[0]
 }
 
-func deriveFrom(a,b fs2.Attr) bool {
+func deriveFrom(a, b store.Attr) bool {
 	if b.CRC64s == nil {
 		logrus.Debugf("Derived match because of empty target")
 		return true
@@ -204,19 +200,22 @@ func deriveFrom(a,b fs2.Attr) bool {
 
 func getAction(i item) string {
 	if sameContent(i.la, i.ra) {
-		switch  {
-		case i.l == nil: {
-			logrus.Debugf("Remote content for %s matches a deletion. Push a deletion", i.name)
-			return "push"
-		}
-		case i.r == nil: {
-			logrus.Debugf("Local content for %s matches a deletion. Pull a deletion", i.name)
-			return "pull"
-		}
-		default: {
-			logrus.Debugf("Identical content for %s. No action", i.name)
-			return ""
-		}
+		switch {
+		case i.l == nil:
+			{
+				logrus.Debugf("Remote content for %s matches a deletion. Push a deletion", i.name)
+				return "push"
+			}
+		case i.r == nil:
+			{
+				logrus.Debugf("Local content for %s matches a deletion. Pull a deletion", i.name)
+				return "pull"
+			}
+		default:
+			{
+				logrus.Debugf("Identical content for %s. No action", i.name)
+				return ""
+			}
 		}
 	}
 
@@ -239,7 +238,7 @@ func getAction(i item) string {
 	}
 }
 
-func apply(i item, local fs2.FS, remote remote, keys Keys, mon chan string) error {
+func apply(i item, local store.FS, remote remote, keys Keys, mon chan string) error {
 	logrus.Debugf("evaluate action for %s", i.name)
 	switch getAction(i) {
 	case "push":
@@ -252,10 +251,10 @@ func apply(i item, local fs2.FS, remote remote, keys Keys, mon chan string) erro
 	return nil
 }
 
-func addZombies(dir string, local fs2.FS, remote remote, remoteFiles []fs.FileInfo) {
-	zombies, _ := fs2.GetZombies(local, dir)
+func addZombies(folder string, local store.FS, remote remote, remoteFiles []fs.FileInfo) {
+	zombies, _ := store.GetZombies(local, folder)
 	for _, z := range zombies {
-		stat, err := remote.F.Stat(path.Join(dir, z))
+		stat, err := remote.F.Stat(path.Join(folder, z))
 		if err == nil {
 			remoteFiles = append(remoteFiles, stat)
 		}
@@ -265,18 +264,18 @@ func addZombies(dir string, local fs2.FS, remote remote, remoteFiles []fs.FileIn
 	})
 }
 
-func syncDir(dir string, local fs2.FS, remote remote, keys Keys, now time.Time,
+func syncFolder(dir string, local store.FS, remote remote, keys Keys, now time.Time,
 	ignoreOlderThan time.Time, mon chan string) error {
 	var me *multierror.Error
 
-	_ = fs2.ClearConflicts(local, dir, mon)
+	_ = ClearConflicts(local, dir, mon)
 
 	dirs := make(map[string]bool)
 	localFiles := listAndSortFiles(dir, local, ignoreOlderThan, dirs)
 	remoteFiles := listAndSortFiles(dir, remote.F, ignoreOlderThan, dirs)
 
 	syncLocalFiles(dir, local, now, localFiles)
-//	addZombies(dir, local, remote, remoteFiles)
+	//	addZombies(dir, local, remote, remoteFiles)
 	items := collect(dir, localFiles, remoteFiles, local, remote, keys)
 	for _, i := range items {
 		logrus.Infof("process '%s', local: %v, remote: %v, la: %v, ra: %v ", i.name, i.l, i.r, i.la, i.ra)
@@ -285,21 +284,21 @@ func syncDir(dir string, local fs2.FS, remote remote, keys Keys, now time.Time,
 
 	for d := range dirs {
 		d = path.Join(dir, d)
-		me = multierror.Append(me, syncDir(d, local, remote, keys, now, ignoreOlderThan, mon))
+		me = multierror.Append(me, syncFolder(d, local, remote, keys, now, ignoreOlderThan, mon))
 	}
 
 	return me.ErrorOrNil()
 }
 
-func pushFile(i item, local fs2.FS, remote remote, keys Keys, mon chan string) error {
+func pushFile(i item, local store.FS, remote remote, keys Keys, mon chan string) error {
 	var me *multierror.Error
 	if i.l == nil {
 		logrus.Infof("file %s removed from remote", i.name)
 		return deleteFile(remote.F, i.name, i.la.ModifiedBy, mon)
 	}
 	r := getEncryptedAccessToFile(remote, keys)
-	me = multierror.Append(fs2.Copy(local, r, i.name, i.name, false, time.Minute))
-	me = multierror.Append(fs2.SetMeta(remote.F, i.name, i.la))
+	me = multierror.Append(store.Copy(local, r, i.name, i.name, false, time.Minute))
+	me = multierror.Append(store.SetMeta(remote.F, i.name, i.la))
 
 	if me.Len() == 0 {
 		if mon != nil {
@@ -310,7 +309,7 @@ func pushFile(i item, local fs2.FS, remote remote, keys Keys, mon chan string) e
 	return me
 }
 
-func pullFile(i item, local fs2.FS, remote remote, conflict bool, keys Keys, mon chan string) error {
+func pullFile(i item, local store.FS, remote remote, conflict bool, keys Keys, mon chan string) error {
 	var me *multierror.Error
 	if i.r == nil {
 		logrus.Infof("file %s removed from local", i.name)
@@ -322,14 +321,14 @@ func pullFile(i item, local fs2.FS, remote remote, conflict bool, keys Keys, mon
 		dir, base := path.Split(i.name)
 		ext := path.Ext(base)
 		dest = path.Join(dir, fmt.Sprintf("%s!!%s%x%s", base[0:len(base)-len(ext)],
-			i.ra.ModifiedBy, i.ra.CRC64s[0] % 256, ext))
+			i.ra.ModifiedBy, i.ra.CRC64s[0]%256, ext))
 	} else {
 		dest = i.name
 	}
 
 	r := getEncryptedAccessToFile(remote, keys)
-	me = multierror.Append(me, fs2.Copy(r, local, i.name, dest, false, 0))
-	me = multierror.Append(me, fs2.SetMeta(local, dest, i.ra))
+	me = multierror.Append(me, store.Copy(r, local, i.name, dest, false, 0))
+	me = multierror.Append(me, store.SetMeta(local, dest, i.ra))
 
 	if me.Len() == 0 {
 		logrus.Infof("file %s pulled from remote into %s", i.name, dest)
@@ -344,20 +343,20 @@ func pullFile(i item, local fs2.FS, remote remote, conflict bool, keys Keys, mon
 	return me
 }
 
-func deleteFile(f fs2.FS, name, modifiedBy string, mon chan string) error {
+func deleteFile(f store.FS, name, modifiedBy string, mon chan string) error {
 	if mon != nil {
 		mon <- fmt.Sprintf("delete,%s,%s,%x", name, modifiedBy, 0)
 	}
 	return f.Remove(name)
 }
 
-func syncLocalFiles(dir string, local fs2.FS, now time.Time, localFiles []fs.FileInfo) {
+func syncLocalFiles(dir string, local store.FS, now time.Time, localFiles []fs.FileInfo) {
 
 	for _, l := range localFiles {
 		n := path.Join(dir, l.Name())
-		_ = fs2.UpdateAttr(local, n, n, func(attr fs2.Attr) fs2.Attr {
+		_ = store.UpdateAttr(local, n, n, func(attr store.Attr) store.Attr {
 			if l.ModTime().After(attr.SyncTime) {
-				crc := fs2.CalculateCRC64(local, n)
+				crc := store.CalculateCRC64(local, n)
 				if len(attr.CRC64s) == 0 || crc != attr.CRC64s[0] {
 					if len(attr.CRC64s) > 16 {
 						attr.CRC64s = append([]uint64{crc}, attr.CRC64s[0:15]...)

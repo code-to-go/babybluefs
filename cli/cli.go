@@ -7,29 +7,35 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"stratofs/fs"
+	"stratofs/store"
 	"strings"
 )
 
-func getFS(ph string) (f fs.FS, ph2 string) {
-	name := strings.Split(ph, "/")[0]
-
+func GetHome() string {
 	home := os.Getenv("SF_HOME")
 	if home == "" {
-		home, _ = os.Getwd()
+		configDir, _ := os.UserConfigDir()
+		home = filepath.Join(configDir, "stratofs")
+		_ = os.MkdirAll(home, 0755)
 	}
+	return home
+}
+
+func getFS(ph string) (f store.FS, ph2 string) {
+	name := strings.Split(ph, "/")[0]
+	home := GetHome()
 	logrus.Infof("home is '%s'", home)
 
-	var c fs.Config
-	l := fs.NewLocal(home, 0644)
-	err := fs.ReadYaml(l, fmt.Sprintf("%s.yaml", name), &c)
+	var c store.Config
+	l := store.NewLocalMount(home)
+	err := store.ReadYaml(l, fmt.Sprintf("%s.yaml", name), &c)
 	if err != nil {
 		color.Red("remote '%s' not found", name)
 		logrus.Infof("cannot load '%s' from '%s': %v", name, home, err)
 		os.Exit(1)
 	}
 
-	f, err = fs.NewFS(c)
+	f, err = store.NewFS(c)
 	if err != nil {
 		color.Red("connection fail on '%s': %v", name, err)
 		logrus.Infof("cannot connect to load '%s': %v", name, err)
@@ -40,9 +46,9 @@ func getFS(ph string) (f fs.FS, ph2 string) {
 }
 
 func List(remote string, hidden bool) {
-	var opts fs.ListOption
+	var opts store.ListOption
 	if hidden {
-		opts = fs.IncludeHiddenFiles
+		opts = store.IncludeHiddenFiles
 	}
 
 	f, ph := getFS(remote)
@@ -69,7 +75,9 @@ func List(remote string, hidden bool) {
 	}
 }
 
-func pullFolder(f fs.FS, ph, local string) {
+func pullFolder(f store.FS, ph, local string) {
+	p := make(chan store.Progress)
+	f = store.NewMon(f, p)
 	stat, err := f.Stat(ph)
 	if err != nil {
 		color.Red("cannot access '%s': %v", ph, err)
@@ -86,7 +94,7 @@ func pullFolder(f fs.FS, ph, local string) {
 		local = filepath.Join(local, path.Base(ph))
 		os.MkdirAll(local, 0755)
 
-		ls, _ := f.ReadDir(ph, fs.IncludeHiddenFiles)
+		ls, _ := f.ReadDir(ph, store.IncludeHiddenFiles)
 		for _, l := range ls {
 			pullFolder(f, path.Join(ph, l.Name()), local)
 		}
@@ -143,4 +151,3 @@ func Push(local, remote string) {
 
 	color.Green("push '%s' in '%s'", remote, local)
 }
-
