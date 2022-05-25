@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"babybluefs/store"
 	"fmt"
 	"github.com/fatih/color"
 	"gopkg.in/yaml.v3"
@@ -9,7 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"stratofs/store"
 	"strings"
 	"time"
 )
@@ -55,6 +55,10 @@ func Create(transport string) {
 		c.Azure = &store.AzureConfig{}
 	case "smb":
 		c.SMB = &store.SMBConfig{}
+	case "kafka":
+		c.Kafka = &store.KafkaConfig{}
+	case "sharepoint":
+		c.Sharepoint = &store.SharepointConfig{}
 	}
 
 	home := GetHome()
@@ -86,7 +90,7 @@ func Create(transport string) {
 	after, _ := os.Stat(filepath.Join(home, name))
 	if before.ModTime() == after.ModTime() {
 		color.Green("No changes. Delete file")
-		os.Remove(filepath.Join(home, name))
+		_ = os.Remove(filepath.Join(home, name))
 		return
 	}
 
@@ -112,4 +116,30 @@ func Create(transport string) {
 	}
 
 	color.Green("configuration %s created", c.Name)
+}
+
+func Edit(remote string) {
+	home := GetHome()
+	ph := filepath.Join(home, fmt.Sprintf("%s.yaml", remote))
+	before, err := os.Stat(ph)
+	if err != nil {
+		color.Red("%s does not exist", remote)
+		os.Exit(1)
+	}
+
+	cmd := exec.Command(getEditor(), ph)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		color.Red("Something went wrong: %v", err)
+		os.Exit(1)
+	}
+	after, _ := os.Stat(ph)
+	if before.ModTime() == after.ModTime() {
+		color.Green("No changes done")
+	} else {
+		color.Green("Changes done")
+	}
 }

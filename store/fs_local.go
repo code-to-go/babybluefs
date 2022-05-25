@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/fs"
@@ -16,6 +17,7 @@ import (
 type Local struct {
 	Mount string
 	Perm  fs.FileMode
+	url   string
 }
 
 func (l *Local) realPath(name string) string {
@@ -67,7 +69,8 @@ type LocalConfig struct {
 
 func NewLocal(c LocalConfig) FS {
 	mount, _ := filepath.Abs(c.Mount)
-	return &Local{mount, c.Perm}
+	url := fmt.Sprintf("file://%s", mount)
+	return &Local{mount, c.Perm, url}
 }
 
 func NewLocalMount(mount string) FS {
@@ -160,4 +163,8 @@ func (l *Local) Touch(name string) error {
 
 func (l *Local) Close() error {
 	return nil
+}
+
+func (l *Local) String() string {
+	return l.url
 }

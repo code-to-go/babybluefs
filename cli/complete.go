@@ -1,12 +1,12 @@
 package cli
 
 import (
+	"babybluefs/store"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
-	"stratofs/store"
 	"strconv"
 	"strings"
 )
@@ -23,62 +23,59 @@ func filterEscapeAndPrint(filter string, escape bool, l ...string) {
 	}
 }
 
-func getRemoteList(home, remote, ph string) []string {
-	data, err := ioutil.ReadFile(filepath.Join(home, fmt.Sprintf("%s.yaml", remote)))
-	if err != nil {
-		return nil
-	}
-
-	var c store.Config
-	err = yaml.Unmarshal(data, &c)
-	if err != nil {
-		return nil
-	}
-
-	f, err := store.NewFS(c)
-	if err != nil {
-		return nil
-	}
-
-	dir := path.Dir(ph)
-	filter := ph[len(dir):]
+func getStoreList(prefix string, f store.FS, ph string) []string {
+	dir, filter := path.Split(ph)
 	filter = strings.Trim(filter, "/")
-	//fmt.Println(dir+"::"+filter)
-	//fmt.Println("...")
+	for strings.HasPrefix(dir, "/") {
+		dir = dir[1:]
+	}
 
-	var remotes []string
+	var storeList []string
 	ls, _ := f.ReadDir(dir, store.IncludeHiddenFiles)
 	for _, l := range ls {
 		if strings.HasPrefix(l.Name(), filter) {
 			if l.IsDir() {
-				remotes = append(remotes,
-					fmt.Sprintf("%s/", path.Join(remote, dir, l.Name())))
+				storeList = append(storeList,
+					fmt.Sprintf("%s%s/", prefix, path.Join(dir, l.Name())))
 			} else {
-				remotes = append(remotes, path.Join(remote, dir, l.Name()))
+				storeList = append(storeList, prefix+path.Join(dir, l.Name()))
 			}
 		}
 	}
-	return remotes
+	return storeList
 }
 
-func getRemotes(startWith string) []string {
-	home := GetHome()
+func completePath(startWith string) []string {
+	if isLocalPath(startWith) {
+		dir, ph := filepath.Split(startWith)
+		f := store.NewLocalMount(dir)
+		return getStoreList(dir, f, ph)
+	}
 
-	var remotes []string
+	home := GetHome()
+	var phs []string
 	ls, _ := ioutil.ReadDir(home)
 	for _, l := range ls {
 		ext := filepath.Ext(l.Name())
 		if ext == ".yaml" {
 			name := l.Name()[0 : len(l.Name())-len(ext)]
 			if strings.HasPrefix(name, startWith) {
-				remotes = append(remotes, fmt.Sprintf("%s/", name))
+				phs = append(phs, fmt.Sprintf("%s/", name))
 			}
 			if strings.HasPrefix(startWith, name) {
-				remotes = append(remotes, getRemoteList(home, name, startWith[len(name):])...)
+				f, name, ph, err := GetFS(startWith)
+				if err == nil {
+					phs = append(phs, getStoreList(name+"/", f, ph)...)
+				}
 			}
 		}
 	}
-	return remotes
+
+	if startWith == "" {
+		phs = append(phs, "."+string(os.PathSeparator))
+	}
+
+	return phs
 }
 
 func getLocals(startWith string) []string {
@@ -117,33 +114,13 @@ func getLocals(startWith string) []string {
 func completeList(args []string) {
 	switch len(args) {
 	case 0:
-		filterEscapeAndPrint("", true, getRemotes("")...)
+		filterEscapeAndPrint("", true, completePath("")...)
 	case 1:
-		filterEscapeAndPrint("", true, getRemotes(args[0])...)
+		filterEscapeAndPrint("", true, completePath(args[0])...)
 	}
 }
 
-func completePull(args []string) {
-	switch len(args) {
-	case 0:
-		filterEscapeAndPrint("", true, getRemotes("")...)
-	case 1:
-		filterEscapeAndPrint("", true, getRemotes(args[0])...)
-	case 2:
-		filterEscapeAndPrint("", true, getLocals(args[1])...)
-	}
-}
-
-func completePush(args []string) {
-	switch len(args) {
-	case 0:
-		filterEscapeAndPrint("", true, getLocals("")...)
-	case 1:
-		filterEscapeAndPrint("", true, getLocals(args[0])...)
-	case 2:
-		filterEscapeAndPrint("", true, getRemotes(args[1])...)
-	}
-}
+var storeTypes = []string{"s3", "smb", "azure", "sftp", "ftp", "sharepoint", "kafka"}
 
 func completeCreate(args []string) {
 	filter := ""
@@ -151,8 +128,35 @@ func completeCreate(args []string) {
 		filter = args[0]
 	}
 
-	filterEscapeAndPrint(filter, false, "s3 ", "smb ", "azure ", "sftp ",
-		"ftp ", "sharepoint ")
+	var types []string
+	for _, t := range storeTypes {
+		types = append(types, t+" ")
+	}
+	filterEscapeAndPrint(filter, false, types...)
+}
+
+func getRemotes() []string {
+	home := GetHome()
+
+	var remotes []string
+	ls, _ := ioutil.ReadDir(home)
+	for _, l := range ls {
+		ext := filepath.Ext(l.Name())
+		if ext == ".yaml" {
+			name := l.Name()[0 : len(l.Name())-len(ext)]
+			remotes = append(remotes, name)
+		}
+	}
+	return remotes
+}
+
+func completeEdit(args []string) {
+	filter := ""
+	if len(args) > 0 {
+		filter = args[0]
+	}
+
+	filterEscapeAndPrint(filter, false, getRemotes()...)
 }
 
 func Complete(cl string) {
@@ -173,6 +177,8 @@ func Complete(cl string) {
 		completePush(args[2:])
 	case "create":
 		completeCreate(args[2:])
+	case "edit":
+		completeEdit(args[2:])
 	default:
 		filterEscapeAndPrint(args[1], false, "pull ", "push ",
 			"list ", "create ", "edit ", "mesh ", "sync ")

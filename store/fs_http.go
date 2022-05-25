@@ -30,6 +30,7 @@ type HTTP struct {
 	secret    string
 	bearer    string
 	exp       time.Time
+	url       string
 }
 
 func NewHTTP(config HTTPConfig) (FS, error) {
@@ -38,11 +39,13 @@ func NewHTTP(config HTTPConfig) (FS, error) {
 		return nil, err
 	}
 
+	url := config.Endpoint
 	return &HTTP{
 		endpoint:  config.Endpoint,
 		accessKey: config.AccessKey,
 		signKey:   signKey,
 		secret:    config.Secret,
+		url:       url,
 	}, nil
 }
 
@@ -253,4 +256,8 @@ func (h *HTTP) Rename(old, new string) error {
 
 func (h *HTTP) Close() error {
 	return nil
+}
+
+func (h *HTTP) String() string {
+	return h.url
 }

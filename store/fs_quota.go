@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 )
@@ -100,4 +101,8 @@ func (q QuotaFS) Push(name string, r io.Reader) error {
 
 func (q QuotaFS) Close() error {
 	return q.F.Close()
+}
+
+func (q QuotaFS) String() string {
+	return fmt.Sprintf("%s#quota%d", q.F, q.Limit)
 }

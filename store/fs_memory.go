@@ -264,3 +264,7 @@ func (m *Memory) Close() error {
 	m.expiration = 0
 	return nil
 }
+
+func (m *Memory) String() string {
+	return "mem://"
+}

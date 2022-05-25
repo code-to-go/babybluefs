@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="40c81b1c-c0f0-4495-83f0-747265f72158" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/cat.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/cp.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/echo.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/list.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/mkdir.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/process.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/pull.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/push.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/shell.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cli/utils.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/cli.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/complete.go" beforeDir="false" afterPath="$PROJECT_DIR$/cli/complete.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/create.go" beforeDir="false" afterPath="$PROJECT_DIR$/cli/create.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fs/fs_watch.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_access.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_access.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_azure.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_azure.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_config.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_encrypted.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_encrypted.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_ftp.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_ftp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_http.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_http.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_kafka.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_kafka.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_local.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_local.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_memory.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_memory.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_mon.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_mon.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_quota.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_quota.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_s3.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_s3.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_sftp.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_sftp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_sharepoint.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_sharepoint.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_smb.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_smb.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_sub.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_sub.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/fs_trash.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/fs_trash.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/utils_copy.go" beforeDir="false" afterPath="$PROJECT_DIR$/store/utils_copy.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stratofs" beforeDir="false" afterPath="$PROJECT_DIR$/stratofs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file:///usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/chzyer/readline@v0.0.0-20180603132655-2972be24d48e/complete_helper.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/smb2.go" root0="SKIP_INSPECTION" />
+    <setting file="file:///usr/local/go/src/context/context.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/session.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/cli/shell.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/store/fs_smb.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/internal/ntlm/client.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/cli/list.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/store/fs_kafka.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/conn.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/initiator.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/cli/process.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/cli/echo.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/client_fs.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/cli/cat.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/internal/smb2/response.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/client.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/golang.org/x/crypto@v0.0.0-20220321153916-2c7772ba3064/ssh/client.go" root0="SKIP_INSPECTION" />
+    <setting file="file:///usr/local/go/src/strconv/atoi.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/store/fs_mon.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/spnego.go" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="26mFZNGtWV1Bb13uZbmUWngY5rj" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.format.on.save.advertiser.fired" value="true" />
+    <property name="go.formatter.settings.were.checked" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
+    <property name="go.watchers.conflict.with.on.save.actions.check.performed" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../stg" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/cli" />
+      <recent name="$PROJECT_DIR$/store" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/mesh" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Build.go build main.go">
+    <configuration name="go build cli.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="stratofs" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="stratofs" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cli/cli.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="stratofs" />
+      <working_directory value="$PROJECT_DIR$" />
+      <parameters value="shell" />
+      <kind value="FILE" />
+      <package value="stratofs" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build cli.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/store/fs_ftp.go</url>
+          <line>2</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/spnego.go</url>
+          <line>54</line>
+          <option name="timeStamp" value="41" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$USER_HOME$/go/pkg/mod/github.com/hirochachacha/go-smb2@v1.1.0/initiator.go</url>
+          <line>52</line>
+          <option name="timeStamp" value="42" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/cli/mkdir.go</url>
+          <line>7</line>
+          <option name="timeStamp" value="46" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

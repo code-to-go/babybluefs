@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"math"
+	url2 "net/url"
 )
 
 type SharepointConfig struct {
@@ -24,7 +25,8 @@ type SharepointConfig struct {
 }
 
 type SharepointFS struct {
-	sp *api.SP
+	sp  *api.SP
+	url string
 }
 
 func NewSharepoint(config SharepointConfig) (FS, error) {
@@ -44,7 +46,16 @@ func NewSharepoint(config SharepointConfig) (FS, error) {
 
 	fmt.Printf("%s\n", res.Data().Title)
 
-	return &SharepointFS{sp}, nil
+	var url string
+	u, _ := url2.Parse(config.Site)
+	if config.AuthAsApp != nil {
+		url = fmt.Sprintf("sharepoint://%s@%s/%s", config.AuthAsApp.ClientId, u.Host, u.Path)
+	}
+	if config.AuthAsSAML != nil {
+		url = fmt.Sprintf("sharepoint://%s@%s/%s", config.AuthAsSAML.Username, u.Host, u.Path)
+	}
+
+	return &SharepointFS{sp, url}, nil
 }
 
 func getSpAuth(c SharepointConfig) gosip.AuthCnfg {
@@ -112,4 +123,8 @@ func (sp *SharepointFS) Rename(old, new string) error {
 
 func (sp *SharepointFS) Close() error {
 	return nil
+}
+
+func (sp *SharepointFS) String() string {
+	return sp.url
 }

@@ -55,6 +55,8 @@ type FS interface {
 
 	// Props returns properties specific to the file storage
 	Props() Props
+
+	String() string
 }
 
 type Props struct {

@@ -27,6 +27,7 @@ type Config struct {
 	SMB        *SMBConfig        `json:"smb,omitempty" yaml:"smb,omitempty"`
 	HTTP       *HTTPConfig       `json:"http,omitempty" yaml:"http,omitempty"`
 	Sharepoint *SharepointConfig `json:"sharepoint,omitempty" yaml:"sharepoint,omitempty"`
+	Kafka      *KafkaConfig      `json:"kafka,omitempty" yaml:"kafka,omitempty"`
 }
 
 const keyHashFile = ".keyHash"
@@ -69,6 +70,8 @@ func NewFS(c Config) (FS, error) {
 		return NewHTTP(*c.HTTP)
 	case c.Sharepoint != nil:
 		return NewSharepoint(*c.Sharepoint)
+	case c.Kafka != nil:
+		return NewKafka(*c.Kafka)
 	}
 
 	return nil, os.ErrInvalid

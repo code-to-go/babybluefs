@@ -1,7 +1,9 @@
 package store
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"io"
@@ -9,6 +11,7 @@ import (
 	"math"
 	"path"
 	"strings"
+	"time"
 )
 
 type S3Config struct {
@@ -23,6 +26,7 @@ type S3Config struct {
 type S3FS struct {
 	c      *minio.Client
 	bucket string
+	url    string
 }
 
 func checkBucket(c *minio.Client, ctx context.Context, bucket string, location string) error {
@@ -51,7 +55,8 @@ func NewS3(config S3Config) (FS, error) {
 		return nil, err
 	}
 
-	return &S3FS{c, config.Bucket}, nil
+	url := fmt.Sprintf("s3://%s@%s/%s#loc-%s", config.AccessKey, config.Endpoint, config.Bucket, config.Location)
+	return &S3FS{c, config.Bucket, url}, nil
 }
 
 func (s3 *S3FS) Props() Props {
@@ -64,7 +69,10 @@ func (s3 *S3FS) Props() Props {
 }
 
 func (s3 *S3FS) MkdirAll(name string) error {
-	panic("implement me")
+	if !strings.HasSuffix(name, "/") {
+		name = name + "/"
+	}
+	return s3.Push(name, bytes.NewReader(nil))
 }
 
 func (s3 *S3FS) Pull(name string, w io.Writer) error {
@@ -85,6 +93,10 @@ func (s3 *S3FS) Push(name string, r io.Reader) error {
 	ctx := context.Background()
 	defer ctx.Done()
 
+	if strings.HasSuffix(name, "/") {
+		return fmt.Errorf("file can not have / suffix")
+	}
+
 	_, err := s3.c.PutObject(ctx, s3.bucket, name, r, -1, minio.PutObjectOptions{})
 	return err
 }
@@ -93,8 +105,7 @@ func (s3 *S3FS) ReadDir(name string, opts ListOption) ([]fs.FileInfo, error) {
 	ctx := context.Background()
 	defer ctx.Done()
 
-	//prefix := path.Join(s3.bucket, name)
-	if name != "" {
+	if name != "" && !strings.HasSuffix(name, "/") {
 		name += "/"
 	}
 
@@ -105,15 +116,16 @@ func (s3 *S3FS) ReadDir(name string, opts ListOption) ([]fs.FileInfo, error) {
 
 	var sfo []fs.FileInfo
 	for e := range ls {
-		if strings.HasSuffix(e.Key, "/") {
-			continue
-		}
-
 		n := e.Key[len(name):]
-		if opts&IncludeHiddenFiles == 0 && !strings.HasPrefix(n, ".") {
+		if n != "" && (opts&IncludeHiddenFiles == 1 || !strings.HasPrefix(n, ".")) {
+			isDir := strings.HasSuffix(e.Key, "/")
+			if isDir {
+				n = n[0 : len(n)-1]
+			}
 			sfo = append(sfo, simpleFileInfo{
 				name:    n,
 				size:    e.Size,
+				isDir:   isDir,
 				modTime: e.LastModified,
 			})
 		}
@@ -132,6 +144,21 @@ func (s3 *S3FS) Stat(name string) (fs.FileInfo, error) {
 
 	r, err := s3.c.StatObject(ctx, s3.bucket, name, minio.StatObjectOptions{})
 	if err != nil {
+		if ls, err := s3.ReadDir(name, IncludeHiddenFiles); err == nil && len(ls) > 0 {
+			var tm time.Time
+			for _, l := range ls {
+				if tm.Before(l.ModTime()) {
+					tm = l.ModTime()
+				}
+			}
+			return simpleFileInfo{
+				name:    name,
+				size:    0,
+				isDir:   true,
+				modTime: tm,
+			}, nil
+		}
+
 		return nil, err
 	}
 
@@ -168,4 +195,8 @@ func (s3 *S3FS) Rename(old, new string) error {
 
 func (s3 *S3FS) Close() error {
 	return nil
+}
+
+func (s3 *S3FS) String() string {
+	return s3.url
 }

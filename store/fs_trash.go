@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"path"
@@ -64,4 +65,8 @@ func (t *Trash) Touch(name string) error {
 
 func (t *Trash) Close() error {
 	return t.F.Close()
+}
+
+func (t *Trash) String() string {
+	return fmt.Sprintf("%s#trash!%s", t.F, t.Folder)
 }

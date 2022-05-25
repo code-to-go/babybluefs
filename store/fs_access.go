@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"github.com/patrickmn/go-cache"
 	"io"
 	"io/fs"
@@ -130,4 +131,8 @@ func (a Access) Push(name string, r io.Reader) error {
 
 func (a Access) Close() error {
 	return a.F.Close()
+}
+
+func (a Access) String() string {
+	return fmt.Sprintf("Access(%s)", a.F.String())
 }

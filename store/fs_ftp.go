@@ -22,7 +22,8 @@ type FTPConfig struct {
 }
 
 type FTP struct {
-	c *ftp.ServerConn
+	c   *ftp.ServerConn
+	url string
 }
 
 func NewFTP(config FTPConfig) (FS, error) {
@@ -39,7 +40,8 @@ func NewFTP(config FTPConfig) (FS, error) {
 		return nil, err
 	}
 
-	return &FTP{c}, nil
+	url := fmt.Sprintf("ftp://%s@%s/%s", config.Username, config.Addr, config.Base)
+	return &FTP{c, url}, nil
 }
 
 func (f *FTP) Props() Props {
@@ -162,4 +164,8 @@ func (f *FTP) Rename(old, new string) error {
 
 func (f *FTP) Close() error {
 	return f.c.Quit()
+}
+
+func (f *FTP) String() string {
+	return f.url
 }

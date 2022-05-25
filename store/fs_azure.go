@@ -24,6 +24,7 @@ type AzureConfig struct {
 type AzureFS struct {
 	p    pipeline.Pipeline
 	root string
+	url  string
 }
 
 func NewAzure(config AzureConfig) (FS, error) {
@@ -36,8 +37,9 @@ func NewAzure(config AzureConfig) (FS, error) {
 		return nil, err
 	}
 	p := azfile.NewPipeline(credential, azfile.PipelineOptions{})
+	url := fmt.Sprintf("azure://%s@%s/%s", config.AccountName, config.Addr, config.Share)
 
-	return &AzureFS{p, root}, nil
+	return &AzureFS{p, root, url}, nil
 }
 
 func (az *AzureFS) Props() Props {
@@ -255,4 +257,8 @@ func (az *AzureFS) Rename(old, new string) error {
 
 func (az *AzureFS) Close() error {
 	return nil
+}
+
+func (az *AzureFS) String() string {
+	return az.url
 }

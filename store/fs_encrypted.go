@@ -2,6 +2,7 @@ package store
 
 import (
 	"crypto/cipher"
+	"fmt"
 	"io"
 	"io/fs"
 )
@@ -60,4 +61,8 @@ func (e Encrypted) Push(name string, r io.Reader) error {
 
 func (e Encrypted) Close() error {
 	return e.F.Close()
+}
+
+func (e Encrypted) String() string {
+	return fmt.Sprintf("%s#encrypted", e.F)
 }

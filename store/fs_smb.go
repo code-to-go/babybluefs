@@ -22,8 +22,9 @@ type SMBConfig struct {
 }
 
 type SMB struct {
-	s  *smb2.Session
-	sh *smb2.Share
+	s   *smb2.Session
+	sh  *smb2.Share
+	url string
 }
 
 func NewSMB(config SMBConfig) (FS, error) {
@@ -38,7 +39,8 @@ func NewSMB(config SMBConfig) (FS, error) {
 		return nil, err
 	}
 
-	return &SMB{s, share}, nil
+	url := fmt.Sprintf("smb://%s@%s/%s", config.Username, config.Addr, config.Share)
+	return &SMB{s, share, url}, nil
 }
 
 func ListSMBShares(config SMBConfig) ([]string, error) {
@@ -167,4 +169,8 @@ func (s *SMB) Close() error {
 		return err
 	}
 	return s.s.Logoff()
+}
+
+func (s *SMB) String() string {
+	return s.url
 }

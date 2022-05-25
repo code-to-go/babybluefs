@@ -8,9 +8,12 @@ import (
 
 func Copy(from, to FS, src, dest string, includeMeta bool, timeout time.Duration) error {
 	if includeMeta {
-		err := copyFile(from, to, metaName(src), metaName(dest), timeout)
-		if err == context.Canceled {
-			return err
+		_, err := from.Stat(metaName(src))
+		if err == nil {
+			err := copyFile(from, to, metaName(src), metaName(dest), timeout)
+			if err == context.Canceled {
+				return err
+			}
 		}
 	}
 	err := copyFile(from, to, src, dest, timeout)

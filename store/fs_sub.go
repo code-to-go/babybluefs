@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"path"
@@ -79,4 +80,8 @@ func (s *Sub) Push(name string, r io.Reader) error {
 
 func (s *Sub) Close() error {
 	return nil
+}
+
+func (s *Sub) String() string {
+	return fmt.Sprintf("%s/%s", s.F, s.Dir)
 }

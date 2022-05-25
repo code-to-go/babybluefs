@@ -1,12 +1,12 @@
 package cli
 
 import (
+	"babybluefs/mesh"
+	"babybluefs/store"
 	"fmt"
 	"github.com/fatih/color"
 	"os"
 	"path/filepath"
-	"stratofs/mesh"
-	"stratofs/store"
 	"time"
 )
 
